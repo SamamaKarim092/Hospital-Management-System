@@ -2,31 +2,25 @@ package hospital.management.system;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Stack;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
-public class Login extends JFrame {
+public class Login extends JFrame implements ActionListener {
 
     // Declaring the Fields
     JTextField textField;
     JPasswordField jPasswordField;
     JButton b1, b2;
 
-    // HashMap to store username and hashed password
-    HashMap<String, String> users;
-
-
-
     Login() {
-        // Initialize user database
-        users = new HashMap<>();
-        addUser("admin", hashPassword("admin123"));
-        addUser("user", hashPassword("password"));
-
         // Text Username
         JLabel newLabel = new JLabel("Username");
         newLabel.setBounds(40, 20, 100, 30);
@@ -69,11 +63,9 @@ public class Login extends JFrame {
         b1.setFont(new Font("serif", Font.BOLD, 15));
         b1.setBackground(Color.black);
         b1.setForeground(Color.white);
+        b1.addActionListener(this);
         addHoverEffect(b1, new Color(0, 128, 0), Color.black); // Green hover effect
         add(b1);
-
-        // Add login functionality
-        b1.addActionListener(e -> validateLogin());
 
         // Creating a Cancel Button
         b2 = new JButton("Cancel");
@@ -81,6 +73,7 @@ public class Login extends JFrame {
         b2.setFont(new Font("serif", Font.BOLD, 15));
         b2.setBackground(Color.black);
         b2.setForeground(Color.white);
+        b2.addActionListener(this);
         addHoverEffect(b2, new Color(255, 0, 0), Color.black); // Red hover effect
         add(b2);
 
@@ -107,11 +100,6 @@ public class Login extends JFrame {
         });
     }
 
-    // Add user to HashMap
-    private void addUser(String username, String hashedPassword) {
-        users.put(username, hashedPassword);
-    }
-
     // Hash password using SHA-256
     private String hashPassword(String password) {
         try {
@@ -127,45 +115,39 @@ public class Login extends JFrame {
         }
     }
 
-    // Validate login credentials
-    private void validateLogin() {
-        String username = textField.getText();
-        String password = new String(jPasswordField.getPassword());
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == b1) {
+            try {
+                String user = textField.getText();
+                String pass = new String(jPasswordField.getPassword());
 
-        // Validate input format using stack
-        if (!isInputValid(username) || !isInputValid(password)) {
-            JOptionPane.showMessageDialog(this, "Invalid username or password format.");
-            return;
-        }
+                // Hash the entered password
+                String hashedPassword = hashPassword(pass);
 
-        // Validate username and password
-        String hashedPassword = users.get(username);
-        if (hashedPassword != null && hashedPassword.equals(hashPassword(password))) {
-            JOptionPane.showMessageDialog(this, "Login Successful!");
-        } else {
-            JOptionPane.showMessageDialog(this, "Invalid Credentials.");
-        }
-    }
+                // Establish database connection
+                Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/hospital_management_system", "root", "12345");
+                Statement statement = conn.createStatement();
 
-    // Validate input using Stack
-    private boolean isInputValid(String input) {
-        Stack<Character> stack = new Stack<>();
-        for (char c : input.toCharArray()) {
-            if (c == '(' || c == '{' || c == '[') {
-                stack.push(c);
-            } else if (c == ')' || c == '}' || c == ']') {
-                if (stack.isEmpty() || !isMatchingPair(stack.pop(), c)) {
-                    return false;
+                // Query the database
+                String q = "SELECT * FROM login WHERE ID = '" + user + "' AND PW = '" + hashedPassword + "'";
+                ResultSet resultSet = statement.executeQuery(q);
+
+                if (resultSet.next()) {
+                    JOptionPane.showMessageDialog(this, "Login Successful!");
+                    setVisible(false);
+                    new test();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Invalid Credentials.");
                 }
-            }
-        }
-        return stack.isEmpty();
-    }
 
-    private boolean isMatchingPair(char open, char close) {
-        return (open == '(' && close == ')') ||
-                (open == '{' && close == '}') ||
-                (open == '[' && close == ']');
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
+        } else if (e.getSource() == b2) {
+            System.exit(0);
+        }
     }
 
     public static void main(String[] args) {
