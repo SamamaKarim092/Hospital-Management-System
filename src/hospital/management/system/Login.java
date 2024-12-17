@@ -119,24 +119,25 @@ public class Login extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == b1) {
             try {
+                // Retrieving the admin Input
                 String user = textField.getText();
                 String pass = new String(jPasswordField.getPassword());
 
-                // Hash the entered password
+                // Hashing the entered password by the admin
                 String hashedPassword = hashPassword(pass);
 
                 // Establish database connection
                 Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/hospital_management_system", "root", "12345");
                 Statement statement = conn.createStatement();
 
-                // Query the database
+                // Query the database (Checks the user and password that are on the database)
                 String q = "SELECT * FROM login WHERE ID = '" + user + "' AND PW = '" + hashedPassword + "'";
                 ResultSet resultSet = statement.executeQuery(q);
 
                 if (resultSet.next()) {
                     JOptionPane.showMessageDialog(this, "Login Successful!");
                     setVisible(false);
-                    new test();
+                    new Reception();
                 } else {
                     JOptionPane.showMessageDialog(this, "Invalid Credentials.");
                 }
