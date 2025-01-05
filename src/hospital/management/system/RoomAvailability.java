@@ -19,12 +19,42 @@ import java.net.URL;
 import java.sql.ResultSet;
 
 public class RoomAvailability extends JFrame {
+
+    // Static method to get the total count of occupied rooms
+    public static int getOccupiedRoomCount() {
+        int occupiedCount = 0;
+        try {
+            // Establishing the connection
+            conn c = new conn();
+
+            // Execute query to get count of occupied rooms
+            // Assuming 'Room' table has an 'Availability' column where 'Occupied' means the room is in use
+            String query = "SELECT COUNT(*) AS count FROM Room WHERE Availability = 'Occupied'";
+            ResultSet resultSet = c.statement.executeQuery(query);
+
+            if (resultSet.next()) {
+                occupiedCount = resultSet.getInt("count");
+            }
+
+            // Log the count for verification
+            System.out.println("Current occupied room count: " + occupiedCount);
+
+        } catch (Exception e) {
+            // Handle and log any exception
+            e.printStackTrace();
+        }
+
+        // Return the count of occupied rooms
+        return occupiedCount;
+    }
+
     // Add this field declaration
     private MediaPlayer mediaPlayer;
     JTable table;
     JLabel label1;
 
     RoomAvailability() {
+
         // Add new Room Panel
         JPanel panel = new JPanel();
         panel.setBounds(5, 8, 840, 585);
@@ -170,35 +200,61 @@ public class RoomAvailability extends JFrame {
         label4.setFont(new Font("Tahoma" , Font.BOLD , 16));
         panel.add(label4);
 
-        // Back Button
+        // Modern back button with animation
         JButton back = new JButton("Back");
-        back.setBounds(20, 500, 120, 30);
-        back.setBackground(Color.black);
-        back.setForeground(Color.white);
-        panel.add(back);
+        back.setBounds(20, 500, 120, 40);
+        back.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        back.setFocusPainted(false);
+        back.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
+        back.setBackground(new Color(72, 123, 191));
+        back.setForeground(Color.WHITE);
+        back.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Add hover effect using MouseListener
+        // Smooth hover effect
         back.addMouseListener(new java.awt.event.MouseAdapter() {
+            Timer timer;
+            float alpha = 0;
+
             @Override
             public void mouseEntered(java.awt.event.MouseEvent e) {
-                back.setBackground(Color.white);
-                back.setForeground(Color.black);
+                if (timer != null && timer.isRunning()) timer.stop();
+                timer = new Timer(10, evt -> {
+                    alpha += 0.1f;
+                    if (alpha >= 1) {
+                        alpha = 1;
+                        ((Timer)evt.getSource()).stop();
+                    }
+                    back.setBackground(interpolateColor(new Color(72, 123, 191), Color.WHITE, alpha));
+                    back.setForeground(interpolateColor(Color.WHITE, new Color(72, 123, 191), alpha));
+                });
+                timer.start();
             }
 
             @Override
             public void mouseExited(java.awt.event.MouseEvent e) {
-                back.setBackground(Color.black);
-                back.setForeground(Color.white);
+                if (timer != null && timer.isRunning()) timer.stop();
+                timer = new Timer(10, evt -> {
+                    alpha -= 0.1f;
+                    if (alpha <= 0) {
+                        alpha = 0;
+                        ((Timer)evt.getSource()).stop();
+                    }
+                    back.setBackground(interpolateColor(new Color(72, 123, 191), Color.WHITE, alpha));
+                    back.setForeground(interpolateColor(Color.WHITE, new Color(72, 123, 191), alpha));
+                });
+                timer.start();
+            }
+
+            private Color interpolateColor(Color c1, Color c2, float ratio) {
+                int red = (int)(c1.getRed() * (1 - ratio) + c2.getRed() * ratio);
+                int green = (int)(c1.getGreen() * (1 - ratio) + c2.getGreen() * ratio);
+                int blue = (int)(c1.getBlue() * (1 - ratio) + c2.getBlue() * ratio);
+                return new Color(red, green, blue);
             }
         });
 
-        // Back Button ActionListener
-        back.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-            }
-        });
+        back.addActionListener(e -> setVisible(false));
+        panel.add(back);
 
 
         // Room Panel

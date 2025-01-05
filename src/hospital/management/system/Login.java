@@ -168,6 +168,7 @@ public class Login extends JFrame implements ActionListener {
         setLocation(400, 270);
         setLayout(null);
         setVisible(true);
+        setTitle("Hospital Management System - Login");
     }
 
     // Method to add hover effect
@@ -204,33 +205,31 @@ public class Login extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == b1) {
             try {
-                // Retrieving the admin Input
                 String user = textField.getText();
                 String pass = new String(jPasswordField.getPassword());
-
-                // Hashing the entered password by the admin
                 String hashedPassword = hashPassword(pass);
 
-                // Establish database connection
                 Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/hospital_management_system", "root", "12345");
                 Statement statement = conn.createStatement();
 
-                // Query the database (Checks the user and password that are on the database)
                 String q = "SELECT * FROM login WHERE ID = '" + user + "' AND PW = '" + hashedPassword + "'";
                 ResultSet resultSet = statement.executeQuery(q);
 
                 if (resultSet.next()) {
+                    // Use the ID as the username since that's what we have
+                    String userName = resultSet.getString("ID");
                     JOptionPane.showMessageDialog(this, "Login Successful!");
                     setVisible(false);
-                    new Reception();
+                    new Reception(userName);
                 } else {
                     JOptionPane.showMessageDialog(this, "Invalid Credentials.");
                 }
 
+                conn.close();
             } catch (Exception ex) {
                 ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
             }
-
         } else if (e.getSource() == b2) {
             System.exit(0);
         }

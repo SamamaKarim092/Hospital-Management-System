@@ -5,18 +5,18 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Date;
-
-import java.sql.ResultSet;
-import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
-import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URISyntaxException;
+import java.sql.ResultSet;
+import javafx.embed.swing.JFXPanel;
 
-public class NEW_PATIENT extends JFrame implements ActionListener {
+
+public class AddNewPatient extends JFrame implements ActionListener {
 
     JComboBox<String> comboBox;
     JTextField textFieldNumber, textFieldName, textFieldDisease, textFieldDeposit;
@@ -28,7 +28,7 @@ public class NEW_PATIENT extends JFrame implements ActionListener {
     private MediaPlayer mediaPlayer;
     private String radioBTN;
 
-    NEW_PATIENT() {
+    AddNewPatient() {
         // Initialize JavaFX toolkit
         JFXPanel fxPanel = new JFXPanel();
 
@@ -236,17 +236,120 @@ public class NEW_PATIENT extends JFrame implements ActionListener {
         // Buttons
         // ADD
         btn1 = new JButton("Add");
-        btn1.setBounds(100, 430, 120, 30);
-        btn1.setForeground(Color.white);
-        btn1.setBackground(Color.black);
+        btn1.setBounds(100, 470, 120, 40);
+        btn1.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn1.setFocusPainted(false);
+        btn1.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
+        btn1.setBackground(new Color(72, 123, 191));
+        btn1.setForeground(Color.WHITE);
+        btn1.setCursor(new Cursor(Cursor.HAND_CURSOR));
         panel.add(btn1);
+
+        btn1.addMouseListener(new java.awt.event.MouseAdapter() {
+            Timer timer;
+            float alpha = 0;
+
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                if (timer != null && timer.isRunning()) timer.stop();
+                timer = new Timer(10, evt -> {
+                    alpha += 0.1f;
+                    if (alpha >= 1) {
+                        alpha = 1;
+                        ((Timer)evt.getSource()).stop();
+                    }
+                    Color background = interpolateColor(new Color(72, 123, 191), Color.WHITE, alpha);
+                    Color foreground = interpolateColor(Color.WHITE, new Color(72, 123, 191), alpha);
+                    btn1.setBackground(background);
+                    btn1.setForeground(foreground);
+                });
+                timer.start();
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                if (timer != null && timer.isRunning()) timer.stop();
+                timer = new Timer(10, evt -> {
+                    alpha -= 0.1f;
+                    if (alpha <= 0) {
+                        alpha = 0;
+                        ((Timer)evt.getSource()).stop();
+                    }
+                    Color background = interpolateColor(new Color(72, 123, 191), Color.WHITE, alpha);
+                    Color foreground = interpolateColor(Color.WHITE, new Color(72, 123, 191), alpha);
+                    btn1.setBackground(background);
+                    btn1.setForeground(foreground);
+                });
+                timer.start();
+            }
+
+            private Color interpolateColor(Color c1, Color c2, float ratio) {
+                int red = (int)(c1.getRed() * (1 - ratio) + c2.getRed() * ratio);
+                int green = (int)(c1.getGreen() * (1 - ratio) + c2.getGreen() * ratio);
+                int blue = (int)(c1.getBlue() * (1 - ratio) + c2.getBlue() * ratio);
+                return new Color(red, green, blue);
+            }
+        });
+
         btn1.addActionListener(this);
-        // Cancel
-        btn2 = new JButton("Cancel");
-        btn2.setBounds(260, 430, 120, 30);
-        btn2.setForeground(Color.white);
-        btn2.setBackground(Color.black);
+
+        // Back
+        btn2 = new JButton("Back");
+        btn2.setBounds(300, 470, 120, 40);
+        btn2.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn2.setFocusPainted(false);
+        btn2.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
+        btn2.setBackground(new Color(72, 123, 191));
+        btn2.setForeground(Color.WHITE);
+        btn2.setCursor(new Cursor(Cursor.HAND_CURSOR));
         panel.add(btn2);
+
+        btn2.addMouseListener(new java.awt.event.MouseAdapter() {
+            Timer timer;
+            float alpha = 0;
+
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                if (timer != null && timer.isRunning()) timer.stop();
+                timer = new Timer(10, evt -> {
+                    alpha += 0.1f;
+                    if (alpha >= 1) {
+                        alpha = 1;
+                        ((Timer)evt.getSource()).stop();
+                    }
+                    Color background = interpolateColor(new Color(72, 123, 191), Color.WHITE, alpha);
+                    Color foreground = interpolateColor(Color.WHITE, new Color(72, 123, 191), alpha);
+                    btn2.setBackground(background);
+                    btn2.setForeground(foreground);
+                });
+                timer.start();
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                if (timer != null && timer.isRunning()) timer.stop();
+                timer = new Timer(10, evt -> {
+                    alpha -= 0.1f;
+                    if (alpha <= 0) {
+                        alpha = 0;
+                        ((Timer)evt.getSource()).stop();
+                    }
+                    Color background = interpolateColor(new Color(72, 123, 191), Color.WHITE, alpha);
+                    Color foreground = interpolateColor(Color.WHITE, new Color(72, 123, 191), alpha);
+                    btn2.setBackground(background);
+                    btn2.setForeground(foreground);
+                });
+                timer.start();
+            }
+
+            private Color interpolateColor(Color c1, Color c2, float ratio) {
+                int red = (int)(c1.getRed() * (1 - ratio) + c2.getRed() * ratio);
+                int green = (int)(c1.getGreen() * (1 - ratio) + c2.getGreen() * ratio);
+                int blue = (int)(c1.getBlue() * (1 - ratio) + c2.getBlue() * ratio);
+                return new Color(red, green, blue);
+            }
+        });
+
         btn2.addActionListener(this);
 
         setUndecorated(true);
@@ -254,10 +357,13 @@ public class NEW_PATIENT extends JFrame implements ActionListener {
         setLayout(null);
         setLocation(530, 130);
         setVisible(true);
+        setTitle("Hospital Management System - Add Patient");
     }
 
+
+
     public static void main(String[] args) {
-        new NEW_PATIENT();
+        new AddNewPatient();
     }
 
     @Override
@@ -285,6 +391,7 @@ public class NEW_PATIENT extends JFrame implements ActionListener {
                 c.statement.executeUpdate(q);
                 c.statement.executeUpdate(q1);
                 JOptionPane.showMessageDialog(null, "Added Successfully");
+                Reception.refreshAllDashboards();
                 setVisible(false);
             } catch (Exception ex) {
                 ex.printStackTrace();
