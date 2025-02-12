@@ -8,6 +8,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class Reception extends JFrame {
     private JPanel leftPanel;
@@ -16,23 +18,95 @@ public class Reception extends JFrame {
     private static List<Reception> instances = new ArrayList<>();
     private String userName;
 
+    // Queue to manage dashboard updates
+    private Queue<DashboardUpdate> updateQueue;
+    private Thread updateProcessor;
+
+    // Class to encapsulate dashboard update data
+    private static class DashboardUpdate {
+        final int totalDoctors;
+        final int totalPatients;
+        final int activePatients;
+        final int totalAppointments;
+
+        DashboardUpdate(int doctors, int patients, int active, int appointments) {
+            this.totalDoctors = doctors;
+            this.totalPatients = patients;
+            this.activePatients = active;
+            this.totalAppointments = appointments;
+        }
+    }
+
+    // Static method to refresh all Reception instances
+    public static void refreshAllDashboards() {
+        // Safely iterate through all instances and trigger updates
+        for (Reception reception : instances) {
+            if (reception != null && reception.isDisplayable()) {
+                reception.refreshDashboard();
+            }
+        }
+    }
+
+    // Add this method to handle individual dashboard refresh
+    public void refreshDashboard() {
+        // Get latest counts from database
+        int totalDoctors = DoctorInfo.updateDoctorCount();
+        int totalPatients = AllPatientInfo.updatePatientCount();
+        int activePatients = RoomAvailability.getOccupiedRoomCount();
+        int totalAppointments = Ambulance.updateAmbulanceCount();
+
+        // Add update to queue
+        updateQueue.offer(new DashboardUpdate(
+                totalDoctors,
+                totalPatients,
+                activePatients,
+                totalAppointments
+        ));
+    }
+
     Reception(String userName) {
         this.userName = userName;
-        System.out.println("Welcome, " + userName + "!"); // Example placeholder
+        System.out.println("Welcome, " + userName + "!");
         instances.add(this);
+
+        // Initialize the update queue
+        this.updateQueue = new LinkedBlockingQueue<>();
+
         setupPanels();
         setupHeaderAndLogo();
         setupFeatureSection();
         setupButtons();
         setupMainFrame();
+        startUpdateProcessor();
         updateDashboardStats();
     }
 
-    // Static method to refresh all Reception instances
-    public static void refreshAllDashboards() {
-        for (Reception reception : instances) {
-            reception.updateDashboardStats();
-        }
+    private void startUpdateProcessor() {
+        updateProcessor = new Thread(() -> {
+            while (!Thread.currentThread().isInterrupted()) {
+                if (!updateQueue.isEmpty()) {
+                    DashboardUpdate update = updateQueue.poll();
+                    if (update != null) {
+                        SwingUtilities.invokeLater(() -> {
+                            dashboardPanel.updateAllStats(
+                                    update.totalDoctors,
+                                    update.totalPatients,
+                                    update.activePatients,
+                                    update.totalAppointments
+                            );
+                        });
+                    }
+                }
+                try {
+                    Thread.sleep(100); // Small delay to prevent CPU overuse
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        });
+        updateProcessor.setDaemon(true);
+        updateProcessor.start();
     }
 
     private void updateDashboardStats() {
@@ -42,25 +116,24 @@ public class Reception extends JFrame {
         int activePatients = RoomAvailability.getOccupiedRoomCount();
         int totalAppointments = Ambulance.updateAmbulanceCount();
 
-        // Update the dashboard on EDT
-        SwingUtilities.invokeLater(() -> {
-            if (dashboardPanel != null) {
-                dashboardPanel.updateAllStats(totalDoctors, totalPatients, activePatients, totalAppointments);
-            }
-        });
+        // Add update to queue instead of updating directly
+        updateQueue.offer(new DashboardUpdate(
+                totalDoctors,
+                totalPatients,
+                activePatients,
+                totalAppointments
+        ));
     }
 
-    // Method to manually refresh dashboard
-    public void refreshDashboard() {
-        updateDashboardStats();
-    }
-
-    // Clean up when closing
     @Override
     public void dispose() {
+        if (updateProcessor != null) {
+            updateProcessor.interrupt();
+        }
         instances.remove(this);
         super.dispose();
     }
+
 
     private void setupPanels() {
         leftPanel = createPanel(0, 0, 400, 1525, Color.WHITE);

@@ -41,12 +41,12 @@ public class UpdatePatientInfo extends JFrame {
         // Setting up video player
         try {
             JFXPanel videoPanel = new JFXPanel();
-            videoPanel.setBounds(650, 150, 200, 200);
+            videoPanel.setBounds(450, 70, 400, 400);
             panel.add(videoPanel);
 
             javafx.application.Platform.runLater(() -> {
                 try {
-                    URL videoFileUrl = getClass().getResource("/icon/Patient.mp4");
+                    URL videoFileUrl = getClass().getResource("/icon/Update Patient Info.mp4");
                     if (videoFileUrl != null) {
                         Media media = new Media(videoFileUrl.toURI().toString());
                         mediaPlayer = new MediaPlayer(media);
@@ -63,8 +63,8 @@ public class UpdatePatientInfo extends JFrame {
                         });
 
                         MediaView mediaView = new MediaView(mediaPlayer);
-                        mediaView.setFitWidth(300);
-                        mediaView.setFitHeight(300);
+                        mediaView.setFitWidth(400);
+                        mediaView.setFitHeight(400);
                         mediaView.setPreserveRatio(true);
 
                         StackPane root = new StackPane();

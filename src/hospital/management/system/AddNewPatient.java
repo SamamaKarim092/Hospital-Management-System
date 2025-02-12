@@ -132,7 +132,8 @@ public class AddNewPatient extends JFrame implements ActionListener {
         labelNumber.setFont(new Font("Tahoma", Font.BOLD, 14));
         labelNumber.setForeground(Color.WHITE);
         panel.add(labelNumber);
-        // Number Textbox - Fixed the wrong assignment
+
+        // Number Textbox
         textFieldNumber = new JTextField();
         textFieldNumber.setBounds(271, 111, 150, 20);
         panel.add(textFieldNumber);
@@ -143,7 +144,7 @@ public class AddNewPatient extends JFrame implements ActionListener {
         labelName1.setFont(new Font("Tahoma", Font.BOLD, 14));
         labelName1.setForeground(Color.WHITE);
         panel.add(labelName1);
-        // Name Textbox - Fixed the wrong assignment
+        // Name Textbox
         textFieldName = new JTextField();
         textFieldName.setBounds(271, 151, 150, 20);
         panel.add(textFieldName);
@@ -190,7 +191,7 @@ public class AddNewPatient extends JFrame implements ActionListener {
         labelRoom.setForeground(Color.WHITE);
         panel.add(labelRoom);
 
-        // Room Choice
+        // Room Dropdown
         c1 = new Choice();
         try {
             conn c = new conn();
@@ -245,6 +246,7 @@ public class AddNewPatient extends JFrame implements ActionListener {
         btn1.setCursor(new Cursor(Cursor.HAND_CURSOR));
         panel.add(btn1);
 
+        // Hover effect on Add Button
         btn1.addMouseListener(new java.awt.event.MouseAdapter() {
             Timer timer;
             float alpha = 0;
@@ -304,6 +306,7 @@ public class AddNewPatient extends JFrame implements ActionListener {
         btn2.setCursor(new Cursor(Cursor.HAND_CURSOR));
         panel.add(btn2);
 
+        // Hover effect on Back Button
         btn2.addMouseListener(new java.awt.event.MouseAdapter() {
             Timer timer;
             float alpha = 0;

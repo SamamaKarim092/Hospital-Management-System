@@ -42,13 +42,13 @@ public class DashboardPanel extends JPanel {
         patientCountLabel = createCountLabel("0");
         patientPanel.add(patientCountLabel);
 
-        // Active Patients Panel
+        // Occupied Room Panel
         ImageIcon activePatientIcon = loadIcon("icon/Search room button.png", "\u2764"); // Heart as fallback
         activePatientPanel = createStatsPanel("Occupied Room", activePatientIcon);
         activePatientCountLabel = createCountLabel("0");
         activePatientPanel.add(activePatientCountLabel);
 
-        // Appointments Panel
+        // Available Ambulance Panel
         ImageIcon appointmentIcon = loadIcon("icon/Ambulance detail button.png", "\u23F3"); // Clock as fallback
         appointmentPanel = createStatsPanel("Available Ambulance", appointmentIcon);
         appointmentCountLabel = createCountLabel("0");

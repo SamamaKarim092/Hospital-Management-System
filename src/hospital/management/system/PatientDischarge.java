@@ -43,12 +43,12 @@ public class PatientDischarge extends JFrame {
         // Setting up video player
         try {
             JFXPanel videoPanel = new JFXPanel();
-            videoPanel.setBounds(550, 150, 200, 200);
+            videoPanel.setBounds(525, 130, 400, 225);
             panel.add(videoPanel);
 
             javafx.application.Platform.runLater(() -> {
                 try {
-                    URL videoFileUrl = getClass().getResource("/icon/Patient.mp4");
+                    URL videoFileUrl = getClass().getResource("/icon/Patient Discharge.mp4");
                     if (videoFileUrl != null) {
                         Media media = new Media(videoFileUrl.toURI().toString());
                         mediaPlayer = new MediaPlayer(media);
@@ -65,8 +65,8 @@ public class PatientDischarge extends JFrame {
                         });
 
                         MediaView mediaView = new MediaView(mediaPlayer);
-                        mediaView.setFitWidth(300);
-                        mediaView.setFitHeight(300);
+                        mediaView.setFitWidth(400);
+                        mediaView.setFitHeight(650);
                         mediaView.setPreserveRatio(true);
 
                         StackPane root = new StackPane();
@@ -122,7 +122,7 @@ public class PatientDischarge extends JFrame {
         choice.setBounds(20, 40, 200, 30);
         choice.setFont(new Font("Tahoma", Font.PLAIN, 14));
         choice.setBackground(new Color(255, 255, 255, 40));
-        choice.setForeground(Color.WHITE);
+        choice.setForeground(Color.BLACK);
         detailsPanel.add(choice);
 
         try {
@@ -135,7 +135,7 @@ public class PatientDischarge extends JFrame {
             e.printStackTrace();
         }
 
-        // Name Section:
+        // Name Section
         JLabel name = new JLabel("Patient Name");
         name.setBounds(20, 80, 100, 25);
         name.setForeground(Color.WHITE);
@@ -161,7 +161,7 @@ public class PatientDischarge extends JFrame {
         roomNumber.setFont(new Font("Tahoma", Font.BOLD, 14));
         detailsPanel.add(roomNumber);
 
-        // Modified room number label without background image
+        // Modified room number label
         JLabel rNo = new JLabel();
         rNo.setBounds(20, 180, 200, 30);
         rNo.setForeground(Color.WHITE);
@@ -181,7 +181,7 @@ public class PatientDischarge extends JFrame {
         inTime.setFont(new Font("Tahoma", Font.BOLD, 14));
         detailsPanel.add(inTime);
 
-        // Modified time label without background image
+        // Modified time label
         JLabel time = new JLabel();
         time.setBounds(20, 260, 350, 30);
         time.setForeground(Color.WHITE);

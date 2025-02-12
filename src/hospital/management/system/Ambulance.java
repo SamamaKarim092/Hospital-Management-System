@@ -1,7 +1,6 @@
 package hospital.management.system;
 
 import net.proteanit.sql.DbUtils;
-
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -10,64 +9,127 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.sql.ResultSet;
 
-public class Ambulance extends JFrame {
+// AmbulanceNode class for BST
+class AmbulanceNode {
+    String ambulanceId;
+    String driverName;
+    String carName;
+    boolean isAvailable;
+    String phone;
+    String location;
+    AmbulanceNode left, right;
 
-    // Static method to get the total count of occupied rooms
-    public static int getOccupiedRoomCount() {
-        int occupiedCount = 0;
-        try {
-            // Establishing the connection
-            conn c = new conn();
+    public AmbulanceNode(String ambulanceId, String driverName, String carName,
+                         boolean isAvailable, String phone, String location) {
+        this.ambulanceId = ambulanceId;
+        this.driverName = driverName;
+        this.carName = carName;
+        this.isAvailable = isAvailable;
+        this.phone = phone;
+        this.location = location;
+        this.left = this.right = null;
+    }
+}
 
-            // Execute query to get count of occupied rooms
-            // Assuming 'Room' table has an 'Availability' column where 'Occupied' means the room is in use
-            String query = "SELECT COUNT(*) AS count FROM Room WHERE Availability = 'Occupied'";
-            ResultSet resultSet = c.statement.executeQuery(query);
+// BST implementation for Ambulance management
+class AmbulanceBST {
+    private AmbulanceNode root;
 
-            if (resultSet.next()) {
-                occupiedCount = resultSet.getInt("count");
-            }
-
-            // Log the count for verification
-            System.out.println("Current occupied room count: " + occupiedCount);
-
-        } catch (Exception e) {
-            // Handle and log any exception
-            e.printStackTrace();
-        }
-
-        // Return the count of occupied rooms
-        return occupiedCount;
+    public AmbulanceBST() {
+        root = null;
     }
 
+    public void insert(String ambulanceId, String driverName, String carName,
+                       boolean isAvailable, String phone, String location) {
+        root = insertRec(root, ambulanceId, driverName, carName, isAvailable, phone, location);
+    }
+
+    private AmbulanceNode insertRec(AmbulanceNode root, String ambulanceId, String driverName,
+                                    String carName, boolean isAvailable, String phone, String location) {
+        if (root == null) {
+            return new AmbulanceNode(ambulanceId, driverName, carName, isAvailable, phone, location);
+        }
+
+        if (ambulanceId.compareTo(root.ambulanceId) < 0) {
+            root.left = insertRec(root.left, ambulanceId, driverName, carName, isAvailable, phone, location);
+        } else if (ambulanceId.compareTo(root.ambulanceId) > 0) {
+            root.right = insertRec(root.right, ambulanceId, driverName, carName, isAvailable, phone, location);
+        }
+
+        return root;
+    }
+
+    public AmbulanceNode search(String ambulanceId) {
+        return searchRec(root, ambulanceId);
+    }
+
+    private AmbulanceNode searchRec(AmbulanceNode root, String ambulanceId) {
+        if (root == null || root.ambulanceId.equals(ambulanceId)) {
+            return root;
+        }
+
+        if (ambulanceId.compareTo(root.ambulanceId) < 0) {
+            return searchRec(root.left, ambulanceId);
+        }
+
+        return searchRec(root.right, ambulanceId);
+    }
+
+    public AmbulanceNode findNearestAvailable(String location) {
+        AmbulanceNode[] nearest = {null};
+        int[] minDistance = {Integer.MAX_VALUE};
+        findNearestAvailableRec(root, location, nearest, minDistance);
+        return nearest[0];
+    }
+
+    private void findNearestAvailableRec(AmbulanceNode node, String location,
+                                         AmbulanceNode[] nearest, int[] minDistance) {
+        if (node == null) return;
+
+        if (node.isAvailable) {
+            int distance = calculateDistance(location, node.location);
+            if (distance < minDistance[0]) {
+                minDistance[0] = distance;
+                nearest[0] = node;
+            }
+        }
+
+        findNearestAvailableRec(node.left, location, nearest, minDistance);
+        findNearestAvailableRec(node.right, location, nearest, minDistance);
+    }
+
+    private int calculateDistance(String location1, String location2) {
+        return Math.abs(location1.hashCode() - location2.hashCode()) % 100;
+    }
+}
+
+public class Ambulance extends JFrame {
+    private AmbulanceBST ambulanceBST;
 
     // Static method to update and get the ambulance count
     public static int updateAmbulanceCount() {
         int ambulanceCount = 0;
         try {
-            // Establishing the connection
             conn c = new conn();
-
-            // Execute query to get the ambulance count
             ResultSet resultSet = c.statement.executeQuery("SELECT COUNT(*) AS count FROM Ambulance");
             if (resultSet.next()) {
                 ambulanceCount = resultSet.getInt("count");
             }
-
-            // Optionally, log or update a class variable
             System.out.println("Updated ambulance count: " + ambulanceCount);
-
         } catch (Exception e) {
-            // Handle and log any exception
             e.printStackTrace();
         }
-
-        // Return the updated count
         return ambulanceCount;
     }
 
+    // Method to find nearest available ambulance
+    public AmbulanceNode findNearestAmbulance(String location) {
+        return ambulanceBST.findNearestAvailable(location);
+    }
 
     Ambulance() {
+        // Initialize BST
+        ambulanceBST = new AmbulanceBST();
 
         // Main Panel with gradient background
         JPanel panel = new JPanel() {
@@ -88,7 +150,7 @@ public class Ambulance extends JFrame {
         panel.setLayout(null);
         add(panel);
 
-        // Table Setup with modernized look
+        // Table Setup
         JTable table = new JTable();
         table.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         table.setForeground(Color.WHITE);
@@ -101,7 +163,7 @@ public class Ambulance extends JFrame {
         table.setSelectionForeground(Color.WHITE);
         table.setFocusable(false);
 
-        // Modern header with White Color
+        // Table Header Setup
         JTableHeader header = table.getTableHeader();
         header.setFont(new Font("Segoe UI Semibold", Font.PLAIN, 13));
         header.setBackground(Color.white);
@@ -109,7 +171,7 @@ public class Ambulance extends JFrame {
         header.setPreferredSize(new Dimension(header.getPreferredSize().width, 35));
         header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(255, 255, 255, 50)));
 
-        // Custom cell renderer with dynamic padding
+        // Custom cell renderer
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
@@ -125,7 +187,6 @@ public class Ambulance extends JFrame {
                     setForeground(Color.WHITE);
                 }
 
-                // Dynamic padding based on column content
                 String text = value != null ? value.toString() : "";
                 int padding = Math.min(text.length() * 2, 15);
                 setBorder(BorderFactory.createEmptyBorder(2, padding, 2, padding));
@@ -135,14 +196,14 @@ public class Ambulance extends JFrame {
         };
         centerRenderer.setHorizontalAlignment(JLabel.LEFT);
 
-        // Enhanced scrollpane
+        // Scrollpane Setup
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBounds(20, 140, 910, 390);
         scrollPane.setBackground(new Color(72, 123, 191));
         scrollPane.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 30), 1));
         scrollPane.getViewport().setBackground(new Color(72, 123, 191));
 
-        // Custom scrollbar styling
+        // Custom scrollbar
         scrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI() {
             @Override
             protected void configureScrollBarColors() {
@@ -152,16 +213,27 @@ public class Ambulance extends JFrame {
         });
         panel.add(scrollPane);
 
-        // Fetch and display data with dynamic column sizing
+        // Fetch and display data
         try {
             conn c = new conn();
             ResultSet resultSet = c.statement.executeQuery("select * from Ambulance");
             table.setModel(DbUtils.resultSetToTableModel(resultSet));
 
+            // Populate BST while fetching data
+            while(resultSet.next()) {
+                ambulanceBST.insert(
+                        resultSet.getString("id"),
+                        resultSet.getString("name"),
+                        resultSet.getString("car_name"),
+                        resultSet.getString("available").equalsIgnoreCase("yes"),
+                        resultSet.getString("phone"),
+                        resultSet.getString("location")
+                );
+            }
+
             // Dynamic column width adjustment
             TableColumnModel columnModel = table.getColumnModel();
             for (int i = 0; i < columnModel.getColumnCount(); i++) {
-                // Get maximum width needed for header and data
                 int headerWidth = table.getColumnName(i).length() * 10;
                 int maxDataWidth = 0;
 
@@ -173,9 +245,8 @@ public class Ambulance extends JFrame {
                     }
                 }
 
-                // Set column width based on content (with minimum and maximum constraints)
                 int finalWidth = Math.max(headerWidth, maxDataWidth);
-                finalWidth = Math.max(80, Math.min(finalWidth, 220)); // Min 60px, Max 200px
+                finalWidth = Math.max(80, Math.min(finalWidth, 220));
                 columnModel.getColumn(i).setPreferredWidth(finalWidth);
                 columnModel.getColumn(i).setCellRenderer(centerRenderer);
             }
@@ -184,7 +255,7 @@ public class Ambulance extends JFrame {
             e.printStackTrace();
         }
 
-        // Modern back button with animation
+        // Back button with animation
         JButton back = new JButton("Back");
         back.setBounds(20, 550, 120, 40);
         back.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -194,7 +265,7 @@ public class Ambulance extends JFrame {
         back.setForeground(Color.WHITE);
         back.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Smooth hover effect
+        // Button hover effect
         back.addMouseListener(new java.awt.event.MouseAdapter() {
             Timer timer;
             float alpha = 0;
@@ -239,41 +310,39 @@ public class Ambulance extends JFrame {
         back.addActionListener(e -> setVisible(false));
         panel.add(back);
 
-
         // Ambulance Information Heading
         JLabel info = new JLabel("Ambulance Information");
         info.setBounds(25, 25, 300, 45);
         info.setForeground(Color.WHITE);
-        info.setFont(new Font("Tahoma" , Font.BOLD , 24));
+        info.setFont(new Font("Tahoma", Font.BOLD, 24));
         panel.add(info);
 
         // Name Heading
         JLabel name = new JLabel("Name");
         name.setBounds(40, 95, 250, 45);
         name.setForeground(Color.WHITE);
-        name.setFont(new Font("Tahoma" , Font.BOLD , 14));
+        name.setFont(new Font("Tahoma", Font.BOLD, 14));
         panel.add(name);
 
-        // Car Name Heading
+        // Car Heading
         JLabel car = new JLabel("Car Name");
         car.setBounds(180, 95, 250, 45);
         car.setForeground(Color.WHITE);
-        car.setFont(new Font("Tahoma" , Font.BOLD , 14));
+        car.setFont(new Font("Tahoma", Font.BOLD, 14));
         panel.add(car);
 
         // Available Heading
         JLabel available = new JLabel("Available");
         available.setBounds(350, 95, 250, 45);
         available.setForeground(Color.WHITE);
-        available.setFont(new Font("Tahoma" , Font.BOLD , 14));
+        available.setFont(new Font("Tahoma", Font.BOLD, 14));
         panel.add(available);
 
         // Phone Heading
         JLabel phone = new JLabel("Phone");
         phone.setBounds(500, 95, 250, 45);
         phone.setForeground(Color.WHITE);
-        phone.setFont(new Font("Tahoma" , Font.BOLD , 14));
-        panel.add(phone);
+        phone.setFont(new Font("Tahoma", Font.BOLD, 14));
 
         // Location Heading
         JLabel location = new JLabel("Location");

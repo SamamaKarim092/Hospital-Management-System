@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.sql.SQLException;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
@@ -19,21 +20,45 @@ import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import java.net.URL;
+import java.util.HashMap;
 
 public class Login extends JFrame implements ActionListener {
 
     // Declaring the Fields
-    JTextField textField;
-    JPasswordField jPasswordField;
-    JCheckBox showPassword;
-    JButton b1, b2;
+    private final JTextField textField;
+    private final JPasswordField jPasswordField;
+    private final JCheckBox showPassword;
+    private final JButton b1, b2;
     private MediaPlayer mediaPlayer;
 
-    Login() {
-        // Initialize JavaFX toolkit
-        JFXPanel fxPanel = new JFXPanel();
+    // Make HashMaps final
+    private final HashMap<String, String> userCredentials;
+    private static final int MAX_LOGIN_ATTEMPTS = 3;
+    private final HashMap<String, Integer> loginAttempts;
 
-        // Text AdminPanel
+    Login() {
+        // Initialize HashMaps
+        userCredentials = new HashMap<>();
+        loginAttempts = new HashMap<>();
+
+        // Initialize components
+        textField = new JTextField();
+        jPasswordField = new JPasswordField();
+        showPassword = new JCheckBox("Show Password");
+        b1 = new JButton("Login");
+        b2 = new JButton("Cancel");
+
+        // Load credentials from database on startup
+        loadCredentialsFromDatabase();
+
+        // Initialize JavaFX toolkit
+        new JFXPanel(); // Removed unused variable
+
+        setupUI();
+    }
+
+    private void setupUI() {
+        // Heading AdminPanel
         JLabel admin = new JLabel("AdminPanel");
         admin.setBounds(100, 10, 130, 30);
         admin.setFont(new Font("Tahoma", Font.BOLD, 20));
@@ -55,21 +80,18 @@ public class Login extends JFrame implements ActionListener {
         add(password);
 
         // Textbox Username
-        textField = new JTextField();
         textField.setBounds(150, 60, 150, 30);
         textField.setFont(new Font("Tahoma", Font.PLAIN, 15));
         textField.setBackground(new Color(255, 179, 0));
         add(textField);
 
         // Textbox Password
-        jPasswordField = new JPasswordField();
         jPasswordField.setBounds(150, 110, 150, 30);
         jPasswordField.setFont(new Font("Tahoma", Font.PLAIN, 15));
         jPasswordField.setBackground(new Color(255, 179, 0));
         add(jPasswordField);
 
         // Show Password Checkbox
-        showPassword = new JCheckBox("Show Password");
         showPassword.setBounds(35, 160, 150, 20);
         showPassword.setFont(new Font("Tahoma", Font.PLAIN, 14));
         showPassword.setBackground(new Color(72, 124, 191));
@@ -83,7 +105,47 @@ public class Login extends JFrame implements ActionListener {
         });
         add(showPassword);
 
-        // Setting up video player
+        // Create and set up video player
+        setupVideoPlayer();
+
+        // Creating a Login Button
+        b1.setBounds(40, 200, 120, 30);
+        b1.setFont(new Font("Tahoma", Font.PLAIN, 15));
+        b1.setBackground(Color.black);
+        b1.setForeground(Color.white);
+        b1.addActionListener(this);
+        addHoverEffect(b1, new Color(93, 234, 187), Color.black);
+        add(b1);
+
+        // Creating a Cancel Button
+        b2.setBounds(180, 200, 120, 30);
+        b2.setFont(new Font("Tahoma", Font.PLAIN, 15));
+        b2.setBackground(Color.black);
+        b2.setForeground(Color.white);
+        b2.addActionListener(this);
+        addHoverEffect(b2, new Color(255, 0, 0), Color.black);
+        add(b2);
+
+        // Add window closing event to properly dispose of the MediaPlayer
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                if (mediaPlayer != null) {
+                    mediaPlayer.dispose();
+                }
+            }
+        });
+
+        // Makes a Login Panel
+        getContentPane().setBackground(new Color(72, 124, 191));
+        setSize(700, 300);
+        setLocation(400, 270);
+        setLayout(null);
+        setVisible(true);
+        setTitle("Hospital Management System - Login");
+    }
+
+    private void setupVideoPlayer() {
         try {
             // Create JavaFX panel for video
             JFXPanel videoPanel = new JFXPanel();
@@ -131,44 +193,72 @@ public class Login extends JFrame implements ActionListener {
             e.printStackTrace();
             System.err.println("Error initializing video player: " + e.getMessage());
         }
+    }
 
-        // Creating a Login Button
-        b1 = new JButton("Login");
-        b1.setBounds(40, 200, 120, 30);
-        b1.setFont(new Font("Tahoma", Font.PLAIN, 15));
-        b1.setBackground(Color.black);
-        b1.setForeground(Color.white);
-        b1.addActionListener(this);
-        addHoverEffect(b1, new Color(0, 128, 0), Color.black);
-        add(b1);
+    // Load credentials from the database
+    private void loadCredentialsFromDatabase() {
+        try (Connection conn = DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/hospital_management_system",
+                "root",
+                "12345");
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT ID, PW FROM login")) {
 
-        // Creating a Cancel Button
-        b2 = new JButton("Cancel");
-        b2.setBounds(180, 200, 120, 30);
-        b2.setFont(new Font("Tahoma", Font.PLAIN, 15));
-        b2.setBackground(Color.black);
-        b2.setForeground(Color.white);
-        b2.addActionListener(this);
-        addHoverEffect(b2, new Color(255, 0, 0), Color.black);
-        add(b2);
-
-        // Add window closing event to properly dispose of the MediaPlayer
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            @Override
-            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                if (mediaPlayer != null) {
-                    mediaPlayer.dispose();
-                }
+            while (rs.next()) {
+                userCredentials.put(rs.getString("ID"), rs.getString("PW"));
             }
-        });
 
-        // Makes a Login Panel
-        getContentPane().setBackground(new Color(72, 124, 191));
-        setSize(700, 300);
-        setLocation(400, 270);
-        setLayout(null);
-        setVisible(true);
-        setTitle("Hospital Management System - Login");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this,
+                    "Database Error: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }
+
+    private void loginSuccess(String userName) {
+        // Reset login attempts on successful login
+        loginAttempts.remove(userName);
+        JOptionPane.showMessageDialog(this, "Login Successful!");
+        setVisible(false);
+        new Reception(userName);  // Assuming there's a Reception class to handle login
+    }
+
+    private void loginFailure(String user) {
+        // Increment login attempts
+        int attempts = loginAttempts.getOrDefault(user, 0) + 1;
+        loginAttempts.put(user, attempts);
+
+        String message = String.format("Invalid Credentials. %d attempts remaining.",
+                MAX_LOGIN_ATTEMPTS - attempts);
+        JOptionPane.showMessageDialog(this, message);
+    }
+
+    private void checkDatabaseCredentials(String user, String hashedPassword) {
+        try (Connection conn = DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/hospital_management_system",
+                "root",
+                "12345");
+             Statement statement = conn.createStatement();
+             ResultSet resultSet = statement.executeQuery(
+                     "SELECT * FROM login WHERE ID = '" + user +
+                             "' AND PW = '" + hashedPassword + "'")) {
+
+            if (resultSet.next()) {
+                userCredentials.put(user, hashedPassword);
+                loginSuccess(user);
+            } else {
+                loginFailure(user);
+            }
+
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Database Error: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }
     }
 
     // Method to add hover effect
@@ -204,37 +294,29 @@ public class Login extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == b1) {
-            try {
-                String user = textField.getText();
-                String pass = new String(jPasswordField.getPassword());
-                String hashedPassword = hashPassword(pass);
+            String user = textField.getText();
+            String pass = new String(jPasswordField.getPassword());
+            String hashedPassword = hashPassword(pass);
 
-                Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/hospital_management_system", "root", "12345");
-                Statement statement = conn.createStatement();
+            // Check login attempts
+            if (loginAttempts.getOrDefault(user, 0) >= MAX_LOGIN_ATTEMPTS) {
+                JOptionPane.showMessageDialog(this,
+                        "Account temporarily locked. Please try again later.");
+                return;
+            }
 
-                String q = "SELECT * FROM login WHERE ID = '" + user + "' AND PW = '" + hashedPassword + "'";
-                ResultSet resultSet = statement.executeQuery(q);
-
-                if (resultSet.next()) {
-                    // Use the ID as the username since that's what we have
-                    String userName = resultSet.getString("ID");
-                    JOptionPane.showMessageDialog(this, "Login Successful!");
-                    setVisible(false);
-                    new Reception(userName);
-                } else {
-                    JOptionPane.showMessageDialog(this, "Invalid Credentials.");
-                }
-
-                conn.close();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+            // First check credentials in HashMap
+            if (userCredentials.containsKey(user) &&
+                    userCredentials.get(user).equals(hashedPassword)) {
+                loginSuccess(user);
+            } else {
+                // If not in HashMap, check database as fallback
+                checkDatabaseCredentials(user, hashedPassword);
             }
         } else if (e.getSource() == b2) {
             System.exit(0);
         }
     }
-
     public static void main(String[] args) {
         new Login();
     }
