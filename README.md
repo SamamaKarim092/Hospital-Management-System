@@ -88,14 +88,24 @@ The system uses HashMaps for:
 
 ## 🚀 Getting Started
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/your-username/hospital-management-system.git
+### 1. Install IntelliJ IDEA
+Download and install [IntelliJ IDEA](https://www.jetbrains.com/idea/download/) – the recommended IDE for running and managing this JavaFX project with ease.
 
+### 2. Set Up MySQL Database
+- Install MySQL Server and MySQL Workbench (or any other DB GUI).
+- Create a database (e.g., `hospital_db`).
+- Import the provided SQL script from the `/database` folder to create necessary tables and sample data.
+- Update the database connection credentials in the Java code (DB URL, username, password).
 
+### 3. Import Project into IntelliJ
+- Open IntelliJ IDEA.
+- Click on **File > Open** and select the root folder of the project.
+- Let IntelliJ index and build the project.
+- Make sure the Java SDK and JavaFX SDK (if using Java 11+) are configured correctly in **Project Structure**.
 
-This is the Project made by me including DSA implementation
+### 4. Run the Application
+- Locate and open the `Main.java` file (or equivalent entry point).
+- Click the **Run** button or press **Shift + F10**.
 
-
-
-
+### ✅ That's it!
+Enjoy exploring the Hospital Management System. All features should now be active and connected to the database.
