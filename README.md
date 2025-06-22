@@ -77,8 +77,6 @@ The system uses HashMaps for:
 
 ## 🖼️ Interface Snapshot
 
-![Hospital Management UI](https://github.com/user-attachments/assets/hospital-ui-screenshot)
-
 ### Login page screenshot
 ![image](https://github.com/user-attachments/assets/a5a3e229-0320-4b72-82ed-3b54f08382e8)
 
